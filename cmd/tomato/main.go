@@ -13,9 +13,9 @@ import (
 func main() {
 	var (
 		TomatoesPerSet          = flag.Int("tomatoes", 4, "How many tomatoes in this set?")
-		WorkPeriodInMinutes     = flag.Int("work", 25, "How many minutes in each work period?")
-		RestPeriodInMinutes     = flag.Int("rest", 5, "How many minutes in each rest period?")
-		LongRestPeriodInMinutes = flag.Int("longrest", 15, "How many minutes in the final rest period?")
+		WorkPeriodInMinutes     = flag.Duration("work", time.Minute * 25, "How long is each work period?")
+		RestPeriodInMinutes     = flag.Duration("rest", time.Minute * 5, "How long is each rest period?")
+		LongRestPeriodInMinutes = flag.Duration("long-rest", time.Minute * 15, "How long is the final rest period?")
 	)
 
 	flag.Parse()
@@ -28,21 +28,19 @@ func main() {
 	Tomato(*WorkPeriodInMinutes, *LongRestPeriodInMinutes)
 }
 
-func Tomato(work, rest int) {
+func Tomato(work, rest time.Duration) {
 	Work(work)
 	Rest(rest)
 }
 
-func Work(minutes int) {
-	workDuration := time.Minute * time.Duration(minutes)
-	Notify(workDuration.String() + " Tomato Starting")
-	timer.SetTimer(workDuration).Start()
+func Work(work time.Duration) {
+	Notify(work.String() + " Tomato Starting")
+	timer.SetTimer(work).Start()
 }
 
-func Rest(minutes int) {
-	restDuration := time.Minute * time.Duration(minutes)
-	Notify("Time for a " + restDuration.String() + " break")
-	timer.SetTimer(restDuration).Start()
+func Rest(rest time.Duration) {
+	Notify("Time for a " + rest.String() + " break")
+	timer.SetTimer(rest).Start()
 }
 
 func Notify(message string) {
