@@ -22,6 +22,8 @@ func main() {
 
 	for x := 0; x < *TomatoesPerSet-1; x++ {
 		Tomato(*WorkPeriodInMinutes, *RestPeriodInMinutes)
+		fmt.Println("<ENTER> to begin the next tomato")
+		fmt.Scanln()
 	}
 	Tomato(*WorkPeriodInMinutes, *LongRestPeriodInMinutes)
 }
@@ -33,17 +35,17 @@ func Tomato(work, rest int) {
 
 func Work(minutes int) {
 	workDuration := time.Minute * time.Duration(minutes)
-	Broadcast(workDuration.String() + " Tomato Starting")
+	Notify(workDuration.String() + " Tomato Starting")
 	timer.SetTimer(workDuration).Start()
 }
 
 func Rest(minutes int) {
 	restDuration := time.Minute * time.Duration(minutes)
-	Broadcast("Time for a " + restDuration.String() + " break")
+	Notify("Time for a " + restDuration.String() + " break")
 	timer.SetTimer(restDuration).Start()
 }
 
-func Broadcast(message string) {
+func Notify(message string) {
 	fmt.Println(message)
 	notification := fmt.Sprintf("display notification \"%s\" with title \"Tomato Timer\"", message)
 	Execute(exec.Command("osascript", "-e", notification))
