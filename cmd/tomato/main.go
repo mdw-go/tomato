@@ -35,12 +35,12 @@ func Tomato(work, rest time.Duration) {
 
 func Work(work time.Duration) {
 	Notify(work.String() + " Tomato Starting")
-	timer.SetTimer(work).Start()
+	tomato.SetTimer(work).Start()
 }
 
 func Rest(rest time.Duration) {
 	Notify("Time for a " + rest.String() + " break")
-	timer.SetTimer(rest).Start()
+	tomato.SetTimer(rest).Start()
 }
 
 func Notify(message string) {
