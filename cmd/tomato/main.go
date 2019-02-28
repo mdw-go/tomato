@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"time"
@@ -66,15 +65,9 @@ func Notify(message string) {
 }
 
 func Distract() {
-	AppleScript(`osascript -e "tell application \"Mission Control\" to activate"`)
+	AppleScript("tell application \"Mission Control\" to activate")
 }
 
 func AppleScript(script string) {
-	Execute(exec.Command("osascript", "-e", script))
-}
-
-func Execute(command *exec.Cmd) {
-	if output, err := command.CombinedOutput(); err != nil {
-		log.Println("[WARN]", string(output), err)
-	}
+	exec.Command("osascript", "-e", script).Start()
 }
