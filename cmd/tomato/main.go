@@ -13,25 +13,25 @@ import (
 
 func main() {
 	config := ReadConfiguration()
-	for range loop(config.TomatoesPerSet - 1) {
-		Tomato(config.WorkPeriod, config.RestPeriod)
+	for range loop(config.TomatoesPerSet) {
+		Tomato(config.WorkPeriod, config.RestPeriod, config.Silent)
 		Prompt("Press <enter> to begin next tomato...")
 	}
-	Tomato(config.WorkPeriod, config.LongRestPeriod)
+	Announce(FinishedTomato, config.Silent)
 }
 
 type Configuration struct {
+	Silent         bool
 	TomatoesPerSet int
 	WorkPeriod     time.Duration
 	RestPeriod     time.Duration
-	LongRestPeriod time.Duration
 }
 
 func ReadConfiguration() (config Configuration) {
+	flag.BoolVar(&config.Silent, "silent", false, "When set, refrain from audio announcements.")
 	flag.IntVar(&config.TomatoesPerSet, "tomatoes", 4, "How many tomatoes in this set?")
 	flag.DurationVar(&config.WorkPeriod, "work", time.Minute*20, "How long is each work period?")
 	flag.DurationVar(&config.RestPeriod, "rest", time.Minute*5, "How long is each rest period?")
-	flag.DurationVar(&config.LongRestPeriod, "long-rest", time.Minute*10, "How long is the final rest period?")
 	flag.Parse()
 	return config
 }
@@ -43,31 +43,49 @@ func Prompt(message string) {
 	bufio.NewScanner(os.Stdin).Scan()
 }
 
-func Tomato(work, rest time.Duration) {
+func Tomato(work, rest time.Duration, silent bool) {
 	Work(work)
-	Rest(rest)
+	Rest(rest, silent)
 }
 
 func Work(work time.Duration) {
-	Notify(work.String() + " Tomato Starting")
+	fmt.Println(StartingTomato)
 	tomato.SetTimer(work).Start()
 }
 
-func Rest(rest time.Duration) {
-	Distract()
-	Notify("Time for a " + rest.String() + " break")
+func Rest(rest time.Duration, silent bool) {
+	Announce(StoppingTomato, silent)
+	MissionControl()
 	tomato.SetTimer(rest).Start()
 }
 
 func Notify(message string) {
-	fmt.Println(message)
 	AppleScript(fmt.Sprintf("display notification \"%s\" with title \"Tomato Timer\"", message))
 }
 
-func Distract() {
+func MissionControl() {
 	AppleScript("tell application \"Mission Control\" to activate")
 }
 
 func AppleScript(script string) {
-	exec.Command("osascript", "-e", script).Start()
+	Execute("osascript", "-e", script)
 }
+
+func Announce(message string, silent bool) {
+	fmt.Println(message)
+	if silent {
+		Notify(message)
+	} else {
+		Execute("say", message)
+	}
+}
+
+func Execute(command string, args ...string) {
+	_ = exec.Command(command, args...).Start()
+}
+
+const (
+	StartingTomato = "Starting tomato."
+	StoppingTomato = "Tomato concluded; time for a break."
+	FinishedTomato = "Tomato sessions complete; time for an extended break."
+)
