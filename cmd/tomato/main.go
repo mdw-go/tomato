@@ -13,50 +13,69 @@ import (
 
 func main() {
 	config := ReadConfiguration()
-	for range loop(config.TomatoesPerSet) {
-		Tomato(config.WorkPeriod, config.RestPeriod, config.Silent)
-		Prompt("Press <enter> to begin next tomato...")
-	}
-	Announce(FinishedTomato, config.Silent)
+	session := NewSession(config)
+	session.Run()
 }
 
 type Configuration struct {
 	Silent         bool
 	TomatoesPerSet int
 	WorkPeriod     time.Duration
-	RestPeriod     time.Duration
 }
 
 func ReadConfiguration() (config Configuration) {
 	flag.BoolVar(&config.Silent, "silent", false, "When set, refrain from audio announcements.")
 	flag.IntVar(&config.TomatoesPerSet, "tomatoes", 4, "How many tomatoes in this set?")
 	flag.DurationVar(&config.WorkPeriod, "work", time.Minute*20, "How long is each work period?")
-	flag.DurationVar(&config.RestPeriod, "rest", time.Minute*5, "How long is each rest period?")
 	flag.Parse()
 	return config
 }
 
-func loop(n int) []struct{} { return make([]struct{}, n) }
-
-func Prompt(message string) {
-	fmt.Print(message)
-	bufio.NewScanner(os.Stdin).Scan()
+type Session struct {
+	Configuration
 }
 
-func Tomato(work, rest time.Duration, silent bool) {
-	Work(work)
-	Rest(rest, silent)
+func NewSession(configuration Configuration) *Session {
+	return &Session{Configuration: configuration}
 }
 
-func Work(work time.Duration) {
-	fmt.Println(StartingTomato)
+func (this *Session) Run() {
+	for x := range loop(this.TomatoesPerSet) {
+		this.DoTomato(x == 0)
+	}
+	Announce(FinishedTomato, this.Silent)
+}
+
+func (this *Session) DoTomato(first bool) {
+	if !first {
+		Prompt("Press <enter> to ready to begin the next tomato...")
+	}
+	Work(this.WorkPeriod, this.Silent)
+	Rest(this.Silent)
+}
+
+func Tomato(work time.Duration, silent bool) {
+	Work(work, silent)
+	Rest(silent)
+}
+
+func Work(work time.Duration, silent bool) {
+	Announce(StartingTomato, silent)
 	tomato.SetTimer(work).Start()
 }
 
-func Rest(rest time.Duration, silent bool) {
+func Rest(silent bool) {
 	Announce(StoppingTomato, silent)
 	MissionControl()
-	tomato.SetTimer(rest).Start()
+}
+
+func Announce(message string, silent bool) {
+	fmt.Println(message)
+	if silent {
+		Notify(message)
+	} else {
+		Execute("say", message)
+	}
 }
 
 func Notify(message string) {
@@ -71,17 +90,13 @@ func AppleScript(script string) {
 	Execute("osascript", "-e", script)
 }
 
-func Announce(message string, silent bool) {
-	fmt.Println(message)
-	if silent {
-		Notify(message)
-	} else {
-		Execute("say", message)
-	}
-}
-
 func Execute(command string, args ...string) {
 	_ = exec.Command(command, args...).Start()
+}
+
+func Prompt(message string) {
+	fmt.Print(message)
+	bufio.NewScanner(os.Stdin).Scan()
 }
 
 const (
@@ -89,3 +104,5 @@ const (
 	StoppingTomato = "Tomato concluded; time for a break."
 	FinishedTomato = "Tomato sessions complete; time for an extended break."
 )
+
+func loop(n int) []struct{} { return make([]struct{}, n) }
