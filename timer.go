@@ -8,21 +8,17 @@ import (
 
 type Timer struct {
 	remaining time.Duration
-	tick    time.Duration
 }
 
 func SetTimer(duration time.Duration) *Timer {
-	return &Timer{
-		remaining: duration,
-		tick:    time.Second,
-	}
+	return &Timer{remaining: duration}
 }
 
 func (this *Timer) Start() {
 	fmt.Print(this)
 	for this.remaining > 0 {
-		time.Sleep(this.tick)
-		this.remaining -= this.tick
+		time.Sleep(time.Second)
+		this.remaining -= time.Second
 		fmt.Print(this)
 	}
 	fmt.Print(clearLine)
