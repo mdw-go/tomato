@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"time"
 
 	"github.com/mdwhatcott/tomato"
@@ -39,19 +40,19 @@ func NewSession(configuration Configuration) *Session {
 func (this *Session) Run() {
 	for x := 0; x < this.TomatoesPerSet; x++ {
 		if x > 0 {
-			this.Rest()
+			this.Rest(x)
 		}
-		this.Work()
+		this.Work(x + 1)
 	}
 	this.Finalize()
 }
 
-func (this *Session) Rest() {
-	external.Announce(StoppingTomato, this.Silent)
+func (this *Session) Rest(session int) {
+	external.Announce(fmt.Sprintf(StoppingTomato, session, this.TomatoesPerSet), this.Silent)
 	external.Prompt(StartWhenReady)
 }
-func (this *Session) Work() {
-	external.Announce(StartingTomato, this.Silent)
+func (this *Session) Work(session int) {
+	external.Announce(fmt.Sprintf(StartingTomato, session, this.TomatoesPerSet), this.Silent)
 	for x := 0; x < this.TeamSize; x++ {
 		tomato.SetTimer(this.WorkPeriod / time.Duration(this.TeamSize)).Start()
 		if this.TeamSize > 1 && x < this.TeamSize-1 {
@@ -61,13 +62,13 @@ func (this *Session) Work() {
 	external.MissionControl()
 }
 func (this *Session) Finalize() {
-	external.Announce(FinishedTomato, this.Silent)
+	external.Announce(fmt.Sprintf(FinishedTomato, this.TomatoesPerSet), this.Silent)
 }
 
 const (
-	StartingTomato = "Starting tomato."
-	StoppingTomato = "Tomato concluded; time for a break."
-	FinishedTomato = "Tomato sessions complete; time for an extended break."
+	StartingTomato = "Starting tomato number %d of %d"
+	StoppingTomato = "Tomato number %d of %d concluded; time for a break."
+	FinishedTomato = "All %d tomato sessions complete; time for an extended break."
 	StartWhenReady = "Press <enter> to ready to begin the next tomato..."
 	SwitchDriver   = "Switch driver"
 )
