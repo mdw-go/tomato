@@ -17,12 +17,14 @@ func main() {
 type Configuration struct {
 	Silent         bool
 	TomatoesPerSet int
+	TeamSize       int
 	WorkPeriod     time.Duration
 }
 
 func ReadConfiguration() (config Configuration) {
 	flag.BoolVar(&config.Silent, "silent", false, "When set, refrain from audio announcements.")
 	flag.IntVar(&config.TomatoesPerSet, "tomatoes", 4, "How many tomatoes in this set?")
+	flag.IntVar(&config.TeamSize, "team", 1, "How many members in the team?")
 	flag.DurationVar(&config.WorkPeriod, "work", time.Minute*20, "How long is each work period?")
 	flag.Parse()
 	return config
@@ -35,28 +37,31 @@ func NewSession(configuration Configuration) *Session {
 }
 
 func (this *Session) Run() {
-	for x := range loop(this.TomatoesPerSet) {
-		this.DoTomato(x == 0)
+	for x := 0; x < this.TomatoesPerSet; x++ {
+		if x > 0 {
+			this.Rest()
+		}
+		this.Work()
 	}
-	external.Announce(FinishedTomato, this.Silent)
+	this.Finalize()
 }
 
-func (this *Session) DoTomato(first bool) {
-	if !first {
-		external.Prompt(StartWhenReady)
+func (this *Session) Rest() {
+	external.Announce(StoppingTomato, this.Silent)
+	external.Prompt(StartWhenReady)
+}
+func (this *Session) Work() {
+	external.Announce(StartingTomato, this.Silent)
+	for x := 0; x < this.TeamSize; x++ {
+		tomato.SetTimer(this.WorkPeriod / time.Duration(this.TeamSize)).Start()
+		if this.TeamSize > 1 && x < this.TeamSize-1 {
+			external.Announce(SwitchDriver, this.Silent)
+		}
 	}
-	Work(this.WorkPeriod, this.Silent)
-	Rest(this.Silent)
-}
-
-func Work(work time.Duration, silent bool) {
-	external.Announce(StartingTomato, silent)
-	tomato.SetTimer(work).Start()
-}
-
-func Rest(silent bool) {
-	external.Announce(StoppingTomato, silent)
 	external.MissionControl()
+}
+func (this *Session) Finalize() {
+	external.Announce(FinishedTomato, this.Silent)
 }
 
 const (
@@ -64,6 +69,5 @@ const (
 	StoppingTomato = "Tomato concluded; time for a break."
 	FinishedTomato = "Tomato sessions complete; time for an extended break."
 	StartWhenReady = "Press <enter> to ready to begin the next tomato..."
+	SwitchDriver   = "Switch driver"
 )
-
-func loop(n int) []struct{} { return make([]struct{}, n) }
