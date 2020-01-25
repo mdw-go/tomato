@@ -10,9 +10,7 @@ import (
 )
 
 func main() {
-	config := ReadConfiguration()
-	session := NewSession(config)
-	session.Run()
+	NewSession(ReadConfiguration()).Run()
 }
 
 type Configuration struct {
@@ -23,10 +21,18 @@ type Configuration struct {
 }
 
 func ReadConfiguration() (config Configuration) {
-	flag.BoolVar(&config.Silent, "silent", false, "When set, refrain from audio announcements.")
-	flag.IntVar(&config.TomatoesPerSet, "tomatoes", 4, "How many tomatoes in this set?")
-	flag.IntVar(&config.TeamSize, "team", 1, "How many members in the team?")
-	flag.DurationVar(&config.WorkPeriod, "work", time.Minute*20, "How long is each work period?")
+	flag.BoolVar(&config.Silent,
+		"silent", false, "When set, refrain from audio announcements.",
+	)
+	flag.IntVar(&config.TomatoesPerSet,
+		"tomatoes", 4, "How many tomatoes in this set?",
+	)
+	flag.IntVar(&config.TeamSize,
+		"team", 1, "How many members in the team?",
+	)
+	flag.DurationVar(&config.WorkPeriod,
+		"work", time.Minute*20, "How long is each work period?",
+	)
 	flag.Parse()
 	return config
 }
