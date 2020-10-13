@@ -60,7 +60,7 @@ func (this *Session) Rest(session int) {
 
 func (this *Session) prompt() {
 	signal := make(chan bool)
-	go this.awaitSignal(signal)
+	go this.awaitSignal(signal, time.Second*30)
 	external.Prompt(StartWhenReady)
 	go this.send(signal)
 }
@@ -69,16 +69,15 @@ func (this *Session) send(signal chan bool) {
 	signal <- true
 }
 
-func (this *Session) awaitSignal(signal chan bool) {
-	for {
-		time.Sleep(time.Second * 30)
-		select {
-		case <-signal:
-			return
-		default:
-			external.MissionControl()
-			external.Announce(StartWhenReady, this.Silent)
-		}
+func (this *Session) awaitSignal(signal chan bool, delay time.Duration) {
+	time.Sleep(delay)
+	select {
+	case <-signal:
+		return
+	default:
+		external.MissionControl()
+		external.Announce(StartWhenReady, this.Silent)
+		this.awaitSignal(signal, delay)
 	}
 }
 func (this *Session) Work(session int) {
