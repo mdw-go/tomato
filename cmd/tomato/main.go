@@ -70,6 +70,9 @@ func (this *Session) send(signal chan bool) {
 }
 
 func (this *Session) awaitSignal(signal chan bool, delay time.Duration) {
+	if delay > time.Minute * 5 {
+		delay = time.Minute * 5
+	}
 	time.Sleep(delay)
 	select {
 	case <-signal:
