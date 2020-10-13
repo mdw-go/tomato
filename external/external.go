@@ -12,12 +12,16 @@ func Announce(message string, silent bool) {
 	if silent {
 		Notify(message)
 	} else {
-		Execute("say", "-v", "Samantha", message)
+		Say(message)
 	}
 }
 
 func Notify(message string) {
 	AppleScript(fmt.Sprintf("display notification \"%s\" with title \"Tomato Timer\"", message))
+}
+
+func Say(message string) {
+	Execute("say", "-v", "Samantha", message)
 }
 
 func MissionControl() {
