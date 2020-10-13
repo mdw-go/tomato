@@ -77,7 +77,7 @@ func (this *Session) awaitSignal(signal chan bool, delay time.Duration) {
 	default:
 		external.MissionControl()
 		external.Announce(StartWhenReady, this.Silent)
-		this.awaitSignal(signal, delay)
+		this.awaitSignal(signal, delay+time.Minute)
 	}
 }
 func (this *Session) Work(session int) {
