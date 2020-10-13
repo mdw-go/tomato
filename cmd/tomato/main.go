@@ -55,7 +55,31 @@ func (this *Session) Run() {
 
 func (this *Session) Rest(session int) {
 	external.Announce(fmt.Sprintf(StoppingTomato, session, this.TomatoesPerSet), this.Silent)
+	this.prompt()
+}
+
+func (this *Session) prompt() {
+	signal := make(chan bool)
+	go this.awaitSignal(signal)
 	external.Prompt(StartWhenReady)
+	go this.send(signal)
+}
+
+func (this *Session) send(signal chan bool) {
+	signal <- true
+}
+
+func (this *Session) awaitSignal(signal chan bool) {
+	for {
+		time.Sleep(time.Second * 30)
+		select {
+		case <-signal:
+			return
+		default:
+			external.MissionControl()
+			external.Announce(StartWhenReady, this.Silent)
+		}
+	}
 }
 func (this *Session) Work(session int) {
 	external.Announce(fmt.Sprintf(StartingTomato, session, this.TomatoesPerSet), this.Silent)
@@ -75,6 +99,6 @@ const (
 	StartingTomato = "Starting tomato number %d of %d"
 	StoppingTomato = "Tomato number %d of %d concluded; time for a break."
 	FinishedTomato = "All %d tomato sessions complete; time for an extended break."
-	StartWhenReady = "Press <enter> to ready to begin the next tomato..."
+	StartWhenReady = "Press ENTER when ready to begin the next tomato..."
 	SwitchDriver   = "Switch driver"
 )
