@@ -61,7 +61,8 @@ func (this *Session) Rest(session int) {
 func (this *Session) prompt() {
 	signal := make(chan bool)
 	go this.awaitSignal(signal, time.Second*30)
-	external.Prompt(StartWhenReady)
+	external.Announce(StartWhenReady, this.Silent)
+	external.Prompt("")
 	go this.send(signal)
 }
 
