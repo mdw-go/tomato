@@ -17,7 +17,7 @@ func Announce(message string, silent bool) {
 }
 
 func Notify(message string) {
-	AppleScript(fmt.Sprintf("display notification \"%s\" with title \"Tomato Timer\"", message))
+	AppleScript(fmt.Sprintf(`display notification "%s" with title "Tomato Timer"`, message))
 }
 
 func Say(message string) {
@@ -25,7 +25,7 @@ func Say(message string) {
 }
 
 func MissionControl() {
-	AppleScript("tell application \"Mission Control\" to activate")
+	AppleScript(`tell application "Mission Control" to activate`)
 }
 
 func AppleScript(script string) {
@@ -40,4 +40,3 @@ func Prompt(message string) {
 	fmt.Print(message)
 	bufio.NewScanner(os.Stdin).Scan()
 }
-
