@@ -4,8 +4,8 @@ import (
 	"flag"
 	"time"
 
-	"github.com/mdwhatcott/tomato"
-	"github.com/mdwhatcott/tomato/external"
+	"github.com/mdw-go/tomato"
+	"github.com/mdw-go/tomato/external"
 )
 
 func main() {

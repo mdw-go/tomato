@@ -1,6 +1,6 @@
 # timer
 --
-    import "github.com/mdwhatcott/tomato"
+    import "github.com/mdw-go/tomato"
 
 
 ## Usage
